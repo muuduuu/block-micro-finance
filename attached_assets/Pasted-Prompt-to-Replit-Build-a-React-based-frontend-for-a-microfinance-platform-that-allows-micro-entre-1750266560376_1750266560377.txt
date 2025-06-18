@@ -1,0 +1,65 @@
+Prompt to Replit:
+
+"Build a React-based frontend for a microfinance platform that allows micro-entrepreneurs to request loans, view loan status, make repayments, and interact with Ethereum smart contracts for loan disbursement and repayment. The platform should integrate with Firebase Authentication for user login and Firebase Firestore for storing loan requests and repayment data.
+
+Features:
+User Authentication:
+
+Users should be able to sign up and log in using Firebase Authentication (email/password).
+
+Loan Request:
+
+Users should be able to submit a loan request by entering the loan amount.
+
+The request should be sent to Firebase Firestore, where the loan status will be pending until approved by an admin.
+
+Loan Status:
+
+The loan status should be displayed for each user (pending, approved, rejected, or paid).
+
+Display a dynamic status based on data fetched from Firebase Firestore.
+
+Loan Repayment:
+
+Users should be able to enter their monthly income and make repayments.
+
+Repayments should be calculated as a fixed percentage of the income and sent to Firebase Firestore for tracking.
+
+The loan repayment status should be updated accordingly in the Firestore database.
+
+Ethereum Smart Contract Integration:
+
+Integrate Web3.js or Ethers.js to interact with an Ethereum smart contract for automated loan disbursements and repayments.
+
+Users should be able to trigger repayments via the smart contract once their loan is approved.
+
+Responsive UI/UX:
+
+The app should be mobile-friendly and easy to navigate for users, especially those in micro-entrepreneur communities.
+
+Input forms for loan requests and repayments should be clearly presented.
+
+Use Firebase Hosting for deployment and integrate Firebase Cloud Functions for backend logic.
+
+Folder Structure (for organization):
+src/
+
+components/: Folder for reusable UI components.
+
+firebase.js: Firebase initialization file for Firestore and Authentication.
+
+App.js: Main component that renders the app.
+
+Firebase Integration:
+Ensure Firebase Authentication is set up for sign up, login, and logout functionality.
+
+Use Firestore to store loan requests, repayment history, and loan statuses.
+
+Tech Stack:
+React.js
+
+Firebase (Authentication, Firestore, Cloud Functions)
+
+Web3.js/Ethers.js (Ethereum integration)
+
+Ensure that the app is deployed to Replit, and it interacts with Firebase for backend data storage and Ethereum smart contracts for loan management."
