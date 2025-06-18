@@ -6,16 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useWeb3 } from "@/hooks/useWeb3";
 import { useToast } from "@/hooks/use-toast";
-import { RotateCcw } from "lucide-react";
+import { TransactionHistory } from "@/components/TransactionHistory";
+import { formatAddress } from "@/lib/web3";
+import { RotateCcw, Wallet, ExternalLink, AlertCircle } from "lucide-react";
 
 export function Profile() {
   const { userProfile, updateUserProfile } = useAuth();
+  const { isConnected, account, connectWallet, disconnectWallet, isLoading, error } = useWeb3();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-
-  // Mock wallet address - in production, this would be from Web3 connection
-  const walletAddress = "0x742d35Cc6634C0532925a3b8D41b85F9D0F84f4E2e";
 
   const handlePersonalInfoSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,13 +75,27 @@ export function Profile() {
       setLoading(false);
     }
   };
-
-  const handleWalletRefresh = () => {
-    // Mock Web3 connection refresh
-    toast({
-      title: "Wallet connection refreshed",
-      description: "Your Ethereum wallet connection has been verified.",
-    });
+  const handleWalletRefresh = async () => {
+    if (isConnected) {
+      toast({
+        title: "Wallet connection active",
+        description: "Your Ethereum wallet is already connected and verified.",
+      });
+    } else {
+      try {
+        await connectWallet();
+        toast({
+          title: "Wallet connected!",
+          description: "Your Ethereum wallet has been successfully connected.",
+        });
+      } catch (err) {
+        toast({
+          title: "Connection failed",
+          description: "Failed to connect to your wallet. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -194,27 +209,72 @@ export function Profile() {
             </Button>
           </form>
         </CardContent>
-      </Card>
-
-      {/* Ethereum Wallet */}
+      </Card>      {/* Ethereum Wallet */}
       <Card>
         <CardHeader>
-          <CardTitle>Ethereum Wallet</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Wallet className="h-5 w-5" />
+            Ethereum Wallet
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">Connected Wallet</span>
-              <Badge variant="secondary">Connected</Badge>
+          {error && (
+            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <span className="text-sm text-red-800 dark:text-red-300">{error}</span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground font-mono mb-3">{walletAddress}</p>
-            <Button variant="outline" size="sm" onClick={handleWalletRefresh}>
-              <RotateCcw className="h-4 w-4 mr-1" />
-              Refresh Connection
-            </Button>
-          </div>
+          )}
+
+          {isConnected && account ? (
+            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">Connected Wallet</span>
+                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                  Connected
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-xs text-muted-foreground font-mono">{account}</p>
+                <a
+                  href={`https://etherscan.io/address/${account}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleWalletRefresh} disabled={isLoading}>
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  {isLoading ? "Connecting..." : "Refresh"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={disconnectWallet}>
+                  Disconnect
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">Wallet Status</span>
+                <Badge variant="secondary">Not Connected</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Connect your MetaMask wallet to enable smart contract interactions and crypto payments.
+              </p>
+              <Button variant="outline" size="sm" onClick={handleWalletRefresh} disabled={isLoading}>
+                <Wallet className="h-4 w-4 mr-1" />
+                {isLoading ? "Connecting..." : "Connect Wallet"}
+              </Button>
+            </div>          )}
         </CardContent>
       </Card>
+
+      {/* Transaction History */}
+      <TransactionHistory />
     </div>
   );
 }

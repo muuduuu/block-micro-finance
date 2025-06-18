@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useWeb3 } from "@/hooks/useWeb3";
 import { LoanRequestModal } from "@/components/LoanRequestModal";
 import { RepaymentModal } from "@/components/RepaymentModal";
-import { DollarSign, TrendingUp, Percent, Plus, CreditCard, UserPen, Check, Handshake, FileText } from "lucide-react";
+import { formatAddress } from "@/lib/web3";
+import { DollarSign, TrendingUp, Percent, Plus, CreditCard, UserPen, Check, Handshake, FileText, Wallet } from "lucide-react";
 
 interface DashboardProps {
   onSectionChange: (section: string) => void;
@@ -12,6 +15,7 @@ interface DashboardProps {
 
 export function Dashboard({ onSectionChange }: DashboardProps) {
   const { userProfile } = useAuth();
+  const { isConnected, account, connectWallet } = useWeb3();
   const [loanModalOpen, setLoanModalOpen] = useState(false);
   const [repaymentModalOpen, setRepaymentModalOpen] = useState(false);
 
@@ -67,10 +71,8 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
           </h2>
           <p className="text-blue-100">Manage your loans and grow your business</p>
         </CardContent>
-      </Card>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      </Card>      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -108,6 +110,38 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Progress</p>
                 <p className="text-2xl font-bold text-foreground">{activeLoan.progress}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                <Wallet className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Wallet</p>
+                {isConnected ? (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                      Connected
+                    </Badge>
+                    <p className="text-xs font-mono text-muted-foreground">
+                      {formatAddress(account || '')}
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={connectWallet}
+                    className="mt-1"
+                  >
+                    Connect
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -188,10 +222,11 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
             })}
           </div>
         </CardContent>
-      </Card>
-
-      <LoanRequestModal open={loanModalOpen} onClose={() => setLoanModalOpen(false)} />
-      <RepaymentModal open={repaymentModalOpen} onClose={() => setRepaymentModalOpen(false)} />
+      </Card>      <LoanRequestModal open={loanModalOpen} onClose={() => setLoanModalOpen(false)} />      <RepaymentModal 
+        open={repaymentModalOpen} 
+        onClose={() => setRepaymentModalOpen(false)}
+        smartContractAddress="0x4569c1460f5954353e0d28d8af6fedef283c0533"
+      />
     </div>
   );
 }

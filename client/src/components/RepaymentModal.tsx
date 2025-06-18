@@ -5,29 +5,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
+import { useWeb3 } from "@/hooks/useWeb3";
 import { useToast } from "@/hooks/use-toast";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { X, Shield } from "lucide-react";
+import { repayLoan } from "@/lib/web3";
+import { X, Shield, Wallet } from "lucide-react";
 
 interface RepaymentModalProps {
   open: boolean;
   onClose: () => void;
   loanBalance?: number;
   nextPaymentAmount?: number;
+  smartContractAddress?: string;
 }
 
 export function RepaymentModal({ 
   open, 
   onClose, 
   loanBalance = 825, 
-  nextPaymentAmount = 125 
+  nextPaymentAmount = 125,
+  smartContractAddress
 }: RepaymentModalProps) {
   const { user } = useAuth();
+  const { isConnected } = useWeb3();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("crypto");
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
@@ -35,23 +39,46 @@ export function RepaymentModal({
     setLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const repaymentData = {
-      userId: user.uid,
-      loanId: "demo-loan-id", // In production, this would be passed as prop
-      amount: parseFloat(formData.get("amount") as string),
-      paymentMethod,
-      status: "completed",
-      createdAt: new Date(),
-      paidDate: new Date(),
-      transactionHash: paymentMethod === "crypto" ? `0x${Math.random().toString(16).substr(2, 40)}` : null,
-    };
+    const amount = parseFloat(formData.get("amount") as string);
+    
+    let transactionHash = null;
 
     try {
+      // If crypto payment and smart contract address provided, use smart contract
+      if (paymentMethod === "crypto" && smartContractAddress && isConnected) {
+        try {
+          transactionHash = await repayLoan(smartContractAddress, amount);
+          toast({
+            title: "Blockchain payment successful!",
+            description: `Transaction hash: ${transactionHash}`,
+          });
+        } catch (error: any) {
+          toast({
+            title: "Blockchain payment failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      const repaymentData = {
+        userId: user.uid,
+        loanId: "demo-loan-id", // In production, this would be passed as prop
+        amount,
+        paymentMethod,
+        status: "completed",
+        createdAt: new Date(),
+        paidDate: new Date(),
+        transactionHash: transactionHash || (paymentMethod === "crypto" ? `0x${Math.random().toString(16).substr(2, 40)}` : null),
+      };
+
       await addDoc(collection(db, "repayments"), repaymentData);
       
       toast({
         title: "Payment processed!",
-        description: `Your payment of $${repaymentData.amount} has been processed successfully.`,
+        description: `Your payment of $${amount} has been processed successfully.`,
       });
       
       onClose();
@@ -103,14 +130,18 @@ export function RepaymentModal({
                 required
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
+          </div>          <div className="space-y-2">
             <Label>Payment Method</Label>
             <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="crypto" id="crypto" />
-                <Label htmlFor="crypto">Ethereum Smart Contract</Label>
+                <RadioGroupItem value="crypto" id="crypto" disabled={!isConnected} />
+                <Label htmlFor="crypto" className={!isConnected ? "opacity-50" : ""}>
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4" />
+                    Ethereum Smart Contract
+                    {!isConnected && <span className="text-xs text-muted-foreground">(Connect wallet required)</span>}
+                  </div>
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="bank" id="bank" />
