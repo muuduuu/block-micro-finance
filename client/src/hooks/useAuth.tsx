@@ -78,7 +78,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await setDoc(doc(db, "users", result.user.uid), userProfile);
     } catch (error: any) {
       console.error("Signup error:", error);
-      throw new Error(error.message || "Failed to create account");
+      if (error.code === "auth/configuration-not-found") {
+        throw new Error("Firebase Authentication is not enabled. Please enable Authentication in your Firebase console.");
+      }
+      throw error;
     }
   };
 

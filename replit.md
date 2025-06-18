@@ -126,8 +126,16 @@ The application uses a well-structured PostgreSQL schema with three main entitie
 
 ```
 Changelog:
-- June 18, 2025. Initial setup
+- June 18, 2025: Initial setup and platform development
+- June 18, 2025: Fixed Firebase configuration and authentication setup
+- June 18, 2025: Resolved CSS styling issues and database type errors
+- June 18, 2025: Identified Firebase Authentication needs to be enabled in console
 ```
+
+## Known Issues
+
+- Firebase Authentication service needs to be enabled in the Firebase console
+- User must enable Email/Password authentication in Firebase console settings
 
 ## User Preferences
 
