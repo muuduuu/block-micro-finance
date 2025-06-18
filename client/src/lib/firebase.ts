@@ -15,8 +15,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Connect to emulators in development
-if (import.meta.env.DEV) {
+// Only use emulators if no real Firebase credentials are provided
+if (import.meta.env.DEV && !import.meta.env.VITE_FIREBASE_API_KEY) {
   try {
     connectAuthEmulator(auth, "http://localhost:9099");
     connectFirestoreEmulator(db, "localhost", 8080);

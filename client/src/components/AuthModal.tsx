@@ -53,10 +53,21 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    if (!fullName || !email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     const [firstName, ...lastNameParts] = fullName.split(" ");
-    const lastName = lastNameParts.join(" ");
+    const lastName = lastNameParts.join(" ") || firstName;
 
     try {
+      console.log("Starting signup process...");
       await signUp(email, password, firstName, lastName);
       onClose();
       toast({
@@ -64,9 +75,22 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         description: "Welcome to MicroLend. Your account has been created successfully.",
       });
     } catch (error: any) {
+      console.error("Signup error in modal:", error);
+      let errorMessage = "Failed to create account. Please try again.";
+      
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "An account with this email already exists.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password should be at least 6 characters long.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Please enter a valid email address.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
         title: "Signup failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

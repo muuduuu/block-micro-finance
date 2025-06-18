@@ -53,28 +53,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    
-    // Update Firebase Auth profile
-    await updateProfile(result.user, {
-      displayName: `${firstName} ${lastName}`,
-    });
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update Firebase Auth profile
+      await updateProfile(result.user, {
+        displayName: `${firstName} ${lastName}`,
+      });
 
-    // Create user profile in Firestore
-    const userProfile = {
-      firebaseUid: result.user.uid,
-      email,
-      firstName,
-      lastName,
-      phone: "",
-      businessName: "",
-      businessType: "",
-      monthlyIncome: "0",
-      yearsInBusiness: 0,
-      walletAddress: "",
-    };
+      // Create user profile in Firestore
+      const userProfile = {
+        firebaseUid: result.user.uid,
+        email,
+        firstName,
+        lastName,
+        phone: "",
+        businessName: "",
+        businessType: "",
+        monthlyIncome: "0",
+        yearsInBusiness: 0,
+        walletAddress: "",
+      };
 
-    await setDoc(doc(db, "users", result.user.uid), userProfile);
+      await setDoc(doc(db, "users", result.user.uid), userProfile);
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      throw new Error(error.message || "Failed to create account");
+    }
   };
 
   const logout = async () => {
