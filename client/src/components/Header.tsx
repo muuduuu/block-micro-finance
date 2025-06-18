@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { HandHeart, LogOut } from "lucide-react";
+import { useAdmin } from "@/hooks/useAdmin";
+import { HandHeart, LogOut, Shield } from "lucide-react";
 
 interface HeaderProps {
   currentSection: string;
@@ -9,8 +11,13 @@ interface HeaderProps {
 
 export function Header({ currentSection, onSectionChange }: HeaderProps) {
   const { userProfile, logout } = useAuth();
+  const { isAdmin, adminRole, isOwner } = useAdmin();
 
-  const navItems = [
+  // Different navigation for admins vs regular users
+  const navItems = isAdmin ? [
+    { id: "admin", label: "Admin Dashboard" },
+    { id: "profile", label: "Profile" },
+  ] : [
     { id: "dashboard", label: "Dashboard" },
     { id: "loans", label: "My Loans" },
     { id: "repayments", label: "Repayments" },
@@ -26,26 +33,31 @@ export function Header({ currentSection, onSectionChange }: HeaderProps) {
             <h1 className="text-xl font-bold text-foreground">MicroLend</h1>
           </div>
           
-          <nav className="hidden md:flex space-x-8">
-            {navItems.map((item) => (
+          <nav className="hidden md:flex space-x-8">            {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => onSectionChange(item.id)}
-                className={`font-medium border-b-2 pb-1 transition-colors ${
+                className={`font-medium border-b-2 pb-1 transition-colors flex items-center gap-2 ${
                   currentSection === item.id
                     ? "text-primary border-primary"
                     : "text-muted-foreground border-transparent hover:text-foreground"
                 }`}
               >
+                {item.id === "admin" && <Shield className="h-4 w-4" />}
                 {item.label}
               </button>
             ))}
-          </nav>
-
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">
-              {userProfile?.firstName} {userProfile?.lastName}
-            </span>
+          </nav>          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">
+                {userProfile?.firstName} {userProfile?.lastName}
+              </span>
+              {isAdmin && (
+                <Badge variant="secondary" className="text-xs">
+                  {isOwner ? 'Owner' : adminRole}
+                </Badge>
+              )}
+            </div>
             <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4" />
             </Button>
