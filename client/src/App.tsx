@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AdminProvider, useAdmin } from "@/hooks/useAdmin";
 import { Web3Provider } from "@/hooks/useWeb3";
 import { AuthModal } from "@/components/AuthModal";
 import { Header } from "@/components/Header";
@@ -12,11 +13,23 @@ import { Dashboard } from "@/pages/Dashboard";
 import { Loans } from "@/pages/Loans";
 import { Repayments } from "@/pages/Repayments";
 import { Profile } from "@/pages/Profile";
+import { Admin } from "@/pages/Admin";
 
 function AppContent() {
   const { user, loading } = useAuth();
-  const [currentSection, setCurrentSection] = useState("dashboard");
+  const { isAdmin } = useAdmin();
+  
+  // Set default section based on user type
+  const defaultSection = isAdmin ? "admin" : "dashboard";
+  const [currentSection, setCurrentSection] = useState(defaultSection);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Update section when admin status changes
+  useEffect(() => {
+    if (isAdmin && currentSection === "dashboard") {
+      setCurrentSection("admin");
+    }
+  }, [isAdmin, currentSection]);
 
   if (loading) {
     return (
@@ -31,9 +44,12 @@ function AppContent() {
 
   if (!user) {
     return <AuthModal open={true} onClose={() => {}} />;
-  }
+  }  const renderSection = () => {
+    // If user is admin, redirect to admin dashboard by default
+    if (isAdmin && (currentSection === "dashboard" || currentSection === "loans" || currentSection === "repayments")) {
+      return <Admin />;
+    }
 
-  const renderSection = () => {
     switch (currentSection) {
       case "dashboard":
         return <Dashboard onSectionChange={setCurrentSection} />;
@@ -43,8 +59,11 @@ function AppContent() {
         return <Repayments />;
       case "profile":
         return <Profile />;
+      case "admin":
+        return isAdmin ? <Admin /> : <Dashboard onSectionChange={setCurrentSection} />;
       default:
-        return <Dashboard onSectionChange={setCurrentSection} />;
+        // Default view based on user type
+        return isAdmin ? <Admin /> : <Dashboard onSectionChange={setCurrentSection} />;
     }
   };
 
@@ -67,10 +86,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <Web3Provider>
-            <Toaster />
-            <AppContent />
-          </Web3Provider>
+          <AdminProvider>
+            <Web3Provider>
+              <Toaster />
+              <AppContent />
+            </Web3Provider>
+          </AdminProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

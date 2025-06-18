@@ -1,4 +1,5 @@
-import { Home, CreditCard, DollarSign, User } from "lucide-react";
+import { Home, CreditCard, DollarSign, User, Shield } from "lucide-react";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface MobileNavigationProps {
   currentSection: string;
@@ -6,7 +7,13 @@ interface MobileNavigationProps {
 }
 
 export function MobileNavigation({ currentSection, onSectionChange }: MobileNavigationProps) {
-  const navItems = [
+  const { isAdmin } = useAdmin();
+  
+  // Different navigation for admins vs regular users
+  const navItems = isAdmin ? [
+    { id: "admin", label: "Admin", icon: Shield },
+    { id: "profile", label: "Profile", icon: User },
+  ] : [
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "loans", label: "Loans", icon: DollarSign },
     { id: "repayments", label: "Payments", icon: CreditCard },
