@@ -132,10 +132,16 @@ Changelog:
 - June 18, 2025: Identified Firebase Authentication needs to be enabled in console
 ```
 
-## Known Issues
+## Firebase Setup Requirements
 
-- Firebase Authentication service needs to be enabled in the Firebase console
-- User must enable Email/Password authentication in Firebase console settings
+**Authentication Setup** (✓ Completed):
+- Enable Authentication service in Firebase console
+- Enable Email/Password sign-in method
+
+**Firestore Setup** (⚠️ In Progress):
+- Create Firestore database in production mode
+- Configure security rules to allow authenticated user access
+- Rules should permit users to read/write their own documents only
 
 ## User Preferences
 

@@ -80,6 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Signup error:", error);
       if (error.code === "auth/configuration-not-found") {
         throw new Error("Firebase Authentication is not enabled. Please enable Authentication in your Firebase console.");
+      } else if (error.code === "permission-denied") {
+        throw new Error("Firestore security rules need to be updated. Please check your Firestore database rules.");
       }
       throw error;
     }
