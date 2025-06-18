@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { Web3Provider } from "@/hooks/useWeb3";
 import { AuthModal } from "@/components/AuthModal";
 import { Header } from "@/components/Header";
 import { MobileNavigation } from "@/components/MobileNavigation";
@@ -66,8 +67,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
-          <AppContent />
+          <Web3Provider>
+            <Toaster />
+            <AppContent />
+          </Web3Provider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

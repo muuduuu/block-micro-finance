@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { LoanRequestModal } from "@/components/LoanRequestModal";
+import { WalletConnection } from "@/components/WalletConnection";
+import { LoanContract } from "@/components/LoanContract";
 import { Plus, Link } from "lucide-react";
 
 export function Loans() {
-  const [loanModalOpen, setLoanModalOpen] = useState(false);
-
-  // Mock data - in production, this would come from Firebase
+  const [loanModalOpen, setLoanModalOpen] = useState(false);  // Mock data - in production, this would come from Firebase
   const activeLoan = {
     id: "ML2024001",
     title: "Business Expansion Loan",
@@ -18,7 +18,7 @@ export function Loans() {
     remainingBalance: 825,
     progress: 67,
     status: "active",
-    smartContractAddress: "0x742d35Cc6634C0532925a3b8D...1f4E2e",
+    smartContractAddress: "0x4569c1460f5954353e0d28d8af6fedef283c0533",
   };
 
   const loanHistory = [
@@ -95,8 +95,7 @@ export function Loans() {
       </Card>
 
       {/* Loan History */}
-      <Card>
-        <CardHeader>
+      <Card>        <CardHeader>
           <CardTitle>Loan History</CardTitle>
         </CardHeader>
         <CardContent>
@@ -116,6 +115,15 @@ export function Loans() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Web3 Integration Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <WalletConnection />
+        <LoanContract 
+          contractAddress={activeLoan.smartContractAddress} 
+          loanId={activeLoan.id}
+        />
+      </div>
 
       <LoanRequestModal open={loanModalOpen} onClose={() => setLoanModalOpen(false)} />
     </div>
